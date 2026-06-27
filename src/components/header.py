@@ -15,3 +15,19 @@ def header_home():
                 """, 
                 unsafe_allow_html=True
             )
+    
+    
+def header_dashboard():
+    
+    logo_url = "https://i.ibb.co/KpQTDMpg/logo.png"
+    
+    st.markdown(f"""
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <img src='{logo_url}' style='height:170px;' />
+                    <h2 style='text-align: left; color: #5865F2'>
+                        Attend<br />AI
+                    </h2>
+                </div>
+                """, 
+                unsafe_allow_html=True
+            )

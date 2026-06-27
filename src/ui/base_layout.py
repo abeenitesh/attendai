@@ -19,7 +19,7 @@ def style_base_home():
                 unsafe_allow_html=True
                 )
     
-def style_base_dashboard():
+def style_background_dashboard():
     
     st.markdown("""
                 <style>
@@ -63,7 +63,7 @@ def style_base_layout():
                     h2{
                         font-family: 'Climate Crisis', sans-serif !important;
                         font-size: 2rem !important;
-                        line-height: 1.1 !important;
+                        line-height: 0.9 !important;
                         margin-bottom: 0rem !important;
                         color: black !important;
                     }
