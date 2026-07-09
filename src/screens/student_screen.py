@@ -97,10 +97,6 @@ def authenticate_student(photo_source):
 
     # Same image -> don't scan again
     if st.session_state.last_photo_hash == current_hash:
-        registration_form(
-            photo_source,
-            st.session_state.show_registration
-        )
         return
 
     st.session_state.last_photo_hash = current_hash
@@ -136,9 +132,7 @@ def authenticate_student(photo_source):
     st.info("Face not recognized! You might be a new student!")
 
     st.session_state.show_registration = True
-
-    registration_form(photo_source, True)
-
+    return 
 
 def detect_student(photo_source):
     img = np.array(Image.open(photo_source))
@@ -205,6 +199,7 @@ def registration_form(photo_source, show=False):
                         if response_data:
                             # print(type(response_data))
                             # print(response_data)
+                            st.session_state.show_registration = False
                             train_classifier()
                             st.session_state.is_logged_in = True
                             st.session_state.user_role = "student"
@@ -213,7 +208,6 @@ def registration_form(photo_source, show=False):
                             time.sleep(1)
                             st.session_state.image_source = None
                             st.session_state.last_photo_hash = None
-                            st.session_state.show_registration = False
                             st.session_state.detected_student = None
                             st.rerun()
                             
@@ -293,6 +287,10 @@ def student_screen():
 
         photo_source = st.camera_input("Position your face in the center")
         authenticate_student(photo_source)
+        registration_form(
+            photo_source,
+            st.session_state.show_registration
+        )
 
     # Upload Screen
     elif st.session_state.image_source == "upload":
@@ -319,3 +317,7 @@ def student_screen():
                 st.image(photo_source, caption="Image Preview", width=300)
     
         authenticate_student(photo_source)
+        registration_form(
+            photo_source,
+            st.session_state.show_registration
+        )
