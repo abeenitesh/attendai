@@ -1,5 +1,5 @@
 streamlit
-"psycopg[binary]"
+psycopg[binary]
 numpy
 pandas
 scikit-learn
