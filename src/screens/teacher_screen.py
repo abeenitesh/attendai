@@ -334,6 +334,12 @@ def teacher_screen_register():
 
     with btnc1:
         if st.button("Register", type="primary", icon=":material/passkey:", shortcut="control+enter", width="stretch"):
+            st.write({
+                "username": teacher_username,
+                "name": teacher_name,
+                "password": teacher_password,
+                "confirm": teacher_password_confirm,
+            })
             success, message = register_teacher(teacher_username, teacher_password, teacher_name, teacher_password_confirm)
             if success:
                 st.success(message)
