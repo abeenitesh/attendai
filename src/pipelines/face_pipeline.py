@@ -8,15 +8,15 @@ import streamlit as st
 from src.db.db import get_all_students
 
 
-@st.cache_resorce
+@st.cache_resource
 def load_dlib_models():
-    detector = dlib.get_frontal_face_detector()
+    detector = dlib.get_frontal_face_detector() # first detect all the faces from an image in the format of rectangles
 
-    sp = dlib.shape_predictor(
+    sp = dlib.shape_predictor( # this loads 68 facial landmarks => jawline, eyes, nose, mouth
         face_recognition_models.pose_predictor_model_location()
     )
 
-    facerec = dlib.face_recognition_model_v1(
+    facerec = dlib.face_recognition_model_v1( # deep nural network used for face recognition => converts a face into 128 dimensional feature vector
         face_recognition_models.face_recognition_model_location()
     )
 
@@ -24,19 +24,20 @@ def load_dlib_models():
 
 
 def get_face_embeddings(image_np):
-    detector, sp, facerec = load_dlib_models()
+    detector, sp, facerec = load_dlib_models() # loading all the models from above function
     
-    faces = detector(image_np, 1)
+    # it will give the array of rectangles that hold the point where the faces are in the image
+    faces = detector(image_np, 1) # detecting all the faces from the image, 1 => image enlarge internally to detect small faces and it is slightly slower
 
-    encodings = []
+    encodings = [] # creating an empty list to store all the face embeddings
 
     for face in faces:
-        shape = sp(image_np, face)
-        face_descriptor = facerec.compute_face_descriptor(image_np, shape, 1)
+        shape = sp(image_np, face) # compute the 68 facial landmarks
+        face_descriptor = facerec.compute_face_descriptor(image_np, shape, 1) # produces a 128 dim vector that represents the face, 1 => process the face once (faster)
 
-        encodings.append(np.array(face_descriptor))
+        encodings.append(np.array(face_descriptor)) # storing the current face 128 embedding in array form in encodings variable
 
-    return encodings
+    return encodings # returning all the detected faces embeddings of 128 values in array
 
 
 @st.cache_resource
@@ -59,7 +60,11 @@ def get_trained_model():
     if len(X) == 0:
         return 0
     
-    clf = SVC(kernel="linear", probability=True, class_weight="balanced")
+    clf = SVC(
+        kernel="linear", 
+        probability=True, 
+        class_weight="balanced"
+    )
 
     try:
         clf.fit(X, y)
@@ -79,7 +84,6 @@ def train_classifier():
 
 def predict_attendance(class_image_np):
     encodings = get_face_embeddings(class_image_np)
-
 
     detected_students = {}
 

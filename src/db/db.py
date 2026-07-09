@@ -1,6 +1,6 @@
 import bcrypt
 from psycopg.rows import dict_row
-
+from psycopg.types.json import Jsonb
 from src.db.config import get_connection
 
 
@@ -82,8 +82,8 @@ def create_student(name, face_embedding=None, voice_embedding=None):
                 RETURNING *
             """, (
                 name,
-                face_embedding,
-                voice_embedding
+                Jsonb(face_embedding),
+                Jsonb(voice_embedding)
             ))
             return cur.fetchone()
 
@@ -212,8 +212,8 @@ def create_attendance(logs):
         with conn.cursor() as cur:
             cur.executemany("""
                 INSERT INTO attendance_logs
-                (subject_id, student_id, is_present)
-                VALUES (%s,%s,%s)
+                (timestamp, subject_id, student_id, is_present)
+                VALUES (%(timestamp)s, %(subject_id)s, %(student_id)s, %(is_present)s)
             """, logs)
 
 
@@ -235,5 +235,84 @@ def get_attendance_for_teacher(teacher_id):
                 WHERE s.teacher_id=%s
                 ORDER BY al.timestamp DESC
             """, (teacher_id,))
+
+            return cur.fetchall()
+        
+        
+
+def join_subject(student_id, subject_code):
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+
+            # Find subject
+            cur.execute("""
+                SELECT subject_id, name, subject_code
+                FROM subjects
+                WHERE subject_code = %s
+            """, (subject_code,))
+            subject = cur.fetchone()
+
+            if not subject:
+                return "not_found"
+
+            # Check enrollment
+            cur.execute("""
+                SELECT 1
+                FROM subject_students
+                WHERE student_id = %s
+                  AND subject_id = %s
+            """, (student_id, subject["subject_id"]))
+
+            if cur.fetchone():
+                return "already_enrolled"
+
+            # Enroll
+            cur.execute("""
+                INSERT INTO subject_students(student_id, subject_id)
+                VALUES (%s, %s)
+            """, (student_id, subject["subject_id"]))
+
+            return subject
+
+
+def get_subject_by_code(subject_code):
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute("""
+                SELECT subject_id, name
+                FROM subjects
+                WHERE subject_code = %s
+            """, (subject_code,))
+            return cur.fetchone()
+        
+        
+def is_student_enrolled(student_id, subject_id):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT 1
+                FROM subject_students
+                WHERE student_id = %s
+                  AND subject_id = %s
+            """, (student_id, subject_id))
+            return cur.fetchone() is not None
+        
+
+def get_enrolled_students(subject_id):
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute("""
+                SELECT
+                    ss.subject_id,
+                    ss.student_id,
+                    st.name,
+                    st.face_embedding,
+                    st.voice_embedding
+                FROM subject_students ss
+                JOIN students st
+                    ON ss.student_id = st.student_id
+                WHERE ss.subject_id = %s
+                ORDER BY st.name;
+            """, (subject_id,))
 
             return cur.fetchall()
