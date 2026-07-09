@@ -110,7 +110,7 @@ def teacher_tab_take_attendance():
             with gallery_cols[idx % 4]:
                 st.image(img, width="stretch", caption=f"Photo {idx+1}")
 
-        has_photos = bool(st.session_state.attendance_images)
+    has_photos = bool(st.session_state.attendance_images)
     c1, c2, c3 = st.columns(3)
     with c1:
         if st.button("Clear All Photos", width="stretch", type="tertiary", icon=":material/delete:", disabled=not has_photos):
