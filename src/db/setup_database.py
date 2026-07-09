@@ -1,12 +1,12 @@
 import psycopg
-
-DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "dbname": "attendai",
-    "user": "postgres",
-    "password": "postgres"
-}
+import streamlit as st
+# DB_CONFIG = {
+#     "host": "localhost",
+#     "port": 5432,
+#     "dbname": "attendai",
+#     "user": "postgres",
+#     "password": "postgres"
+# }
 
 schema = """
 -- Teachers
@@ -91,7 +91,7 @@ ON subjects(teacher_id);
 
 def create_database():
     try:
-        with psycopg.connect(**DB_CONFIG) as conn:
+        with psycopg.connect(st.secrets["DATABASE_URL"]) as conn:
             with conn.cursor() as cur:
                 cur.execute(schema)
             conn.commit()
