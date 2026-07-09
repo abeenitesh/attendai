@@ -1,5 +1,4 @@
 import time
-from turtle import width
 from PIL import Image
 import streamlit as st
 import hashlib
